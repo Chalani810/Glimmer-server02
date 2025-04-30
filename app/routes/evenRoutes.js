@@ -1,10 +1,25 @@
 const express = require("express");
-const { add } = require('../controllers/event_controller');
-const authMiddleware = require("../middleware/authMiddleware")
+const multer = require("multer");
+const { add, getAll,deleteEvent } = require("../controllers/event_controller");
+const authMiddleware = require("../middleware/authMiddleware");
 const Event = require("../models/Event");
 
 const router = express.Router();
 
-router.post('/add',authMiddleware, add);
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "app/uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-module.exports = router
+const upload = multer({ storage });
+
+router.post("/add", upload.single("eventImage"), add);
+
+router.get("/", getAll);
+router.delete("/:eventId", deleteEvent);
+
+module.exports = router;
