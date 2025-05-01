@@ -3,9 +3,9 @@
 const mongoose = require("mongoose");
 
 const CheckoutSchema = new mongoose.Schema({
-  orderNumber: {
+  orderId: {
     type: String,
-    required: false,
+    required: true,
   },
   firstName: {
     type: String,
@@ -37,12 +37,17 @@ const CheckoutSchema = new mongoose.Schema({
   },
   contactMethod: {
     type: String,
-    enum: ['Email', 'call', 'Mobile', 'Other'],
+    enum: ['message', 'call', 'email'],
     required: false,
   },
   comment: {
     type: String,
     required: false,
+  },
+  status: {
+    type: String,
+    required: false,
+    default: "Pending",
   },
   totalAmount: {
     type: Number,

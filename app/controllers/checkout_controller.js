@@ -1,13 +1,10 @@
 const Checkout = require("../models/Checkout");
 const path = require("path");	
 const fs = require("fs");
+const { log } = require("console");
 
 const addCheckout = async (req, res) => {
   try {
-    console.log("Received files:", req.file); // Check if file is received
-    console.log("Received body:", req.body); // Check what's in the body
-
-    // Extract all fields from req.body
     const {
       orderNumber,
       firstName,
@@ -22,8 +19,20 @@ const addCheckout = async (req, res) => {
       advancePayment,
     } = req.body;
 
-    // Check if the file was uploaded
     const slipUrl = req.file ? `app/uploads/${req.file.filename}` : '';
+
+    const generateOrderCode = () => {
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hour = String(now.getHours()).padStart(2, '0');
+      const minute = String(now.getMinutes()).padStart(2, '0');
+      const second = String(now.getSeconds()).padStart(2, '0');
+    
+      return `OID-${month}${day}${hour}${minute}${second}`;
+    };
+
+    log("Received file:", req.file); // Log the received file for debugging
 
     // Validation - check important fields
     if (!firstName || !lastName || !email || !totalAmount) {
@@ -34,7 +43,7 @@ const addCheckout = async (req, res) => {
 
     // Create a new checkout entry
     const newCheckout = new Checkout({
-      orderNumber,
+      orderId : generateOrderCode(),
       firstName,
       lastName,
       email,
@@ -57,33 +66,45 @@ const addCheckout = async (req, res) => {
   }
 };
 
-module.exports = {
-  addCheckout,
-};
-
 const getAll = async (req, res) => {
   try {
     const checkouts = await Checkout.find();
     
     const checkoutsWithFullPath = checkouts.map(checkout => {
-      return {
-        ...checkout.toObject(),
-        slipUrl: `${req.protocol}://${req.get('host')}/uploads/${
-          checkouts.slipUrl.split('uploads/')[1]
-        }`
-       }; // Full URL for the slipUrl
-      });
+      const result = {
+        ...checkout.toObject()
+      };
+
+      if (checkout.slipUrl) {
+        try {
+          const splitUrl = checkout.slipUrl.split('uploads/');
+          if (splitUrl.length > 1) {
+            result.slipUrl = `${req.protocol}://${req.get('host')}/uploads/${splitUrl[1]}`;
+          } else {
+            result.slipUrl = checkout.slipUrl;
+          }
+        } catch (error) {
+          result.slipUrl = checkout.slipUrl;
+        }
+      }
+
+      return result;
+    });
+    
     res.status(200).json(checkoutsWithFullPath);
   } catch (err) {
-    res .status(500)
-    .jason({message: "Failed to retrieve checkouts", error: err.message});
+    res.status(500).json({
+      message: "Failed to retrieve checkouts", 
+      error: err.message
+    });
   }
 };
-
 
 const deleteCheckout = async (req, res) => {
   try { 
  const {checkoutId} = req.params;
+
+ log("Received checkoutId:", checkoutId); // Log the received checkoutId for debugging
 
  const checkout = await Checkout.findById(checkoutId);
 if (!checkout) {
