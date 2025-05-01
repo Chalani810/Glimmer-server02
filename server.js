@@ -30,5 +30,4 @@ app.use("/uploads", express.static(path.join(__dirname, 'app/uploads')));
 app.use("/auth", authRoutes);
 app.use("/event", evenRoutes);
 app.use("/checkout", checkoutRoutes);
-app.use("/checkout", checkoutRoutes);
 
