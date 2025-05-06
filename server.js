@@ -14,7 +14,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Static folder for uploaded profile pictures
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB connection

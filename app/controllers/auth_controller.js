@@ -5,31 +5,41 @@ const path = require("path");
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, phone, street, city, postalCode, country } =
-      req.body;
+    const { firstName, lastName, email, password, phone, address } = req.body;
 
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Name, email, and password are required" });
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    // Check for existing email or phone
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email },
+        { phone }
+      ]
+    });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      let message = "User already exists";
+      if (existingUser.email === email) {
+        message = "It looks like you're already registered. Please sign in with your credentials.";
+      } else if (existingUser.phone === phone) {
+        message = "It looks like you're already registered. Please sign in with your credentials.";
+      }
+      return res.status(400).json({ message });
     }
 
     const user = new User({
-      name,
+      firstName,
+      lastName,
       email,
       password,
       phone,
-      address: { street, city, postalCode, country },
+      address,
       profilePicture: req.file ? req.file.filename : null,
     });
 
     await user.save();
-
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -102,6 +112,31 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check if email or phone is being updated to an existing value
+    if (updates.email || updates.phone) {
+      const existingUser = await User.findOne({
+        $and: [
+          { _id: { $ne: id } }, // Exclude current user
+          { 
+            $or: [
+              { email: updates.email || currentUser.email },
+              { phone: updates.phone || currentUser.phone }
+            ]
+          }
+        ]
+      });
+
+      if (existingUser) {
+        let message = "Update would create duplicate user";
+        if (existingUser.email === (updates.email || currentUser.email)) {
+          message = "Email is already registered to another account.";
+        } else if (existingUser.phone === (updates.phone || currentUser.phone)) {
+          message = "Phone number is already registered to another account.";
+        }
+        return res.status(400).json({ message });
+      }
+    }
+
     if (req.file) {
       // Delete old profile picture if it exists
       if (currentUser.profilePicture) {
@@ -113,17 +148,13 @@ const updateUser = async (req, res) => {
       updates.profilePicture = req.file.filename;
     }
 
-    if (updates.street || updates.city || updates.postalCode || updates.country) {
+    if (updates.address) {
       updates.address = {
-        street: updates.street || currentUser.address.street,
-        city: updates.city || currentUser.address.city,
-        postalCode: updates.postalCode || currentUser.address.postalCode,
-        country: updates.country || currentUser.address.country,
+        street: updates.address.street || currentUser.address.street,
+        city: updates.address.city || currentUser.address.city,
+        postalCode: updates.address.postalCode || currentUser.address.postalCode,
+        country: updates.address.country || currentUser.address.country
       };
-      delete updates.street;
-      delete updates.city;
-      delete updates.postalCode;
-      delete updates.country;
     }
 
     if (updates.password) {
@@ -146,6 +177,7 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Find user by _id instead of userId
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });

@@ -2,7 +2,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  userId: {
+    type: String,
+    required: false,
+    unique: true,
+    default: () => `UID-${Math.floor(100000 + Math.random() * 900000)}`,
+  },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String },
@@ -12,8 +19,10 @@ const userSchema = new mongoose.Schema({
     postalCode: { type: String },
     country: { type: String },
   },
-  profilePicture: { type: String }, // filename or URL
+  profilePicture: { type: String },
   role: { type: String, enum: ["user", "admin"], default: "user" },
+}, { 
+  timestamps: true 
 });
 
 // Hash password before saving
