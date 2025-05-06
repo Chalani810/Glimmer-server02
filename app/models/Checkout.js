@@ -68,6 +68,12 @@ const CheckoutSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+
+  assignedEmployees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Employee",
+  }],
+
   createdAt: {
     type: Date,
     default: Date.now,
