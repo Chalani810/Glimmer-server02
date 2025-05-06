@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { add, getAll,deleteEvent } = require("../controllers/event_controller");
+const { add, getAll,deleteEvent,updateEvent } = require("../controllers/event_controller");
 const authMiddleware = require("../middleware/authMiddleware");
 const Event = require("../models/Event");
 
@@ -21,5 +21,6 @@ router.post("/add", upload.single("eventImage"), add);
 
 router.get("/", getAll);
 router.delete("/:eventId", deleteEvent);
+router.put('/:eventId', upload.single('eventImage'), updateEvent);
 
 module.exports = router;
