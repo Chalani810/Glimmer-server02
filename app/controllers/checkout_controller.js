@@ -70,7 +70,7 @@ const addCheckout = async (req, res) => {
 
 const getAll = async (req, res) => {
   try {
-    const checkouts = await Checkout.find();
+    const checkouts = await Checkout.find(); // Assuming you want to populate assigned employees
     
     const checkoutsWithFullPath = checkouts.map(checkout => {
       const result = {
@@ -128,6 +128,32 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const assignEmployees = async (req, res) => {
+  try {
+    const { id } = req.params; // checkout ID
+    const { employeeIds } = req.body; // array of employee ObjectIds
+
+    if (!Array.isArray(employeeIds) || employeeIds.length === 0) {
+      return res.status(400).json({ message: "At least one employee ID is required" });
+    }
+
+    const updatedCheckout = await Checkout.findByIdAndUpdate(
+      id,
+      { assignedEmployees: employeeIds },
+      { new: true }
+    ).populate("assignedEmployees");
+
+    if (!updatedCheckout) {
+      return res.status(404).json({ message: "Checkout not found" });
+    }
+
+    res.status(200).json({ message: "Employees assigned successfully", data: updatedCheckout });
+  } catch (err) {
+    console.error("Error assigning employees:", err);
+    res.status(500).json({ message: "Failed to assign employees", error: err.message });
+  }
+};
+
 
 const deleteCheckout = async (req, res) => {
   try { 
@@ -164,4 +190,5 @@ module.exports = {
   getAll,
   updateOrderStatus,
   deleteCheckout,
+  assignEmployees,
 };
