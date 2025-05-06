@@ -3,6 +3,7 @@ const multer = require("multer");
 const {
   addCheckout,
   getAll,
+  updateOrderStatus,
   deleteCheckout,
 } = require("../controllers/checkout_controller");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -22,6 +23,7 @@ const upload = multer({ storage: storage });
 
 router.post("/add", upload.single("slip"), addCheckout);
 router.get("/getAll", getAll);
+router.put("/:id/status", updateOrderStatus);
 router.delete("/delete/:checkoutId", deleteCheckout);
 
 module.exports = router;

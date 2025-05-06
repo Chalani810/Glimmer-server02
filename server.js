@@ -4,8 +4,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoutes = require("./app/routes/authRoutes");
 const evenRoutes = require("./app/routes/evenRoutes");
+const productRoutes = require("./app/routes/productRoutes");
 const path = require("path");
 const checkoutRoutes = require("./app/routes/checkoutRoutes");
+const cartRoutes = require("./app/routes/cartRoutes"); // Assuming you want to use the same routes for cart as well
 const employeeRoutes = require("./app/routes/employeeRoutes");
 const contactusRoutes = require("./app/routes/contactusRoutes");
 
@@ -31,6 +33,9 @@ app.get("/", (req, res) => {
 app.use("/uploads", express.static(path.join(__dirname, 'app/uploads')));
 app.use("/auth", authRoutes);
 app.use("/event", evenRoutes);
+app.use("/checkout", checkoutRoutes);
+app.use("/cart", cartRoutes); // Assuming you want to use the same routes for cart as well
+app.use("/api", productRoutes);
 app.use("/employee", employeeRoutes);
 app.use("/contact", contactusRoutes);
 

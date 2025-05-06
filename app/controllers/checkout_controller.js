@@ -14,6 +14,7 @@ const addCheckout = async (req, res) => {
       telephone,
       mobile,
       contactMethod,
+      guestcount,
       comment,
       totalAmount,
       advancePayment,
@@ -51,6 +52,7 @@ const addCheckout = async (req, res) => {
       telephone,
       mobile,
       contactMethod,
+      guestcount,
       comment,
       totalAmount,
       advancePayment,
@@ -100,6 +102,33 @@ const getAll = async (req, res) => {
   }
 };
 
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+
+    const updatedOrder = await Checkout.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order status updated", data: updatedOrder });
+  } catch (err) {
+    console.error("Error updating order status:", err);
+    res.status(500).json({ message: "Failed to update order status", error: err.message });
+  }
+};
+
+
 const deleteCheckout = async (req, res) => {
   try { 
  const {checkoutId} = req.params;
@@ -133,5 +162,6 @@ if (!checkout) {
 module.exports = {
   addCheckout,
   getAll,
+  updateOrderStatus,
   deleteCheckout,
 };

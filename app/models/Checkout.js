@@ -40,6 +40,13 @@ const CheckoutSchema = new mongoose.Schema({
     enum: ['message', 'call', 'email'],
     required: false,
   },
+
+  guestcount: {
+    type: String,
+    enum: ['less than 50', '50-100', 'more than 100'],  
+    required: false,
+  },
+  
   comment: {
     type: String,
     required: false,
