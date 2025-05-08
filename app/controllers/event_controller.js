@@ -55,13 +55,12 @@ const deleteEvent = async (req, res) => {
     if (event.photoUrl) {
       const photoPath = path.join(__dirname, "../..", event.photoUrl);
 
-      // Check if the file exists before attempting to delete it
       if (fs.existsSync(photoPath)) {
         fs.unlinkSync(photoPath);
       }
     }
 
-    await event.deleteOne();  // Remove the event document from the database
+    await event.deleteOne(); 
 
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {

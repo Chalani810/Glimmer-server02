@@ -6,6 +6,20 @@ const addProduct = async (req, res) => {
   try {
 
     console.log(req.file);
+
+    const { pname, ename, stockqut, pprice, visibility } = req.body;
+    
+    // ✅ Fix template literal usage
+    const photoUrl = req.file ? `app/uploads/${req.file.filename}` : "";
+
+    // ✅ Validation
+    if (!pname || !ename || !pprice) {
+      return res
+        .status(400)
+        .json({ message: "Product name, event name, and price are required" });
+
+
+    console.log(req.file);
     
 
     const { pname, ename, stock, pprice, visibility } = req.body;
@@ -17,12 +31,17 @@ const addProduct = async (req, res) => {
     // Validation
     if (!pname || !ename || !pprice) {
       return res.status(400).json({ message: "Product name, event name, and price are required" });
+
     }
 
     const newProduct = new Product({
       pname,
       ename,
+
+      stockqut,
+
       stockqut: stock,
+
       pprice,
       photoUrl,
       visibility,
@@ -40,16 +59,29 @@ const getAllProducts = async (req, res) => {
     const products = await Product.find();
 
     const productsWithFullPath = products.map((product) => {
+
+      const cleanPath = product.photoUrl?.split("uploads/")[1] || "";
+      return {
+        ...product.toObject(),
+        photoUrl: `${req.protocol}://${req.get("host")}/uploads/${cleanPath}`,
+
       return {
         ...product.toObject(),
         photoUrl: `${req.protocol}://${req.get("host")}/uploads/${product.photoUrl.split("uploads/")[1]}`,
          // Changed from empty string to null for consistency
+
       };
     });
 
     res.status(200).json(productsWithFullPath);
   } catch (err) {
+
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve products", error: err.message });
+
     res.status(500).json({ message: "Failed to retrieve products", error: err.message });
+
   }
 };
 

@@ -1,4 +1,12 @@
 const express = require("express");
+
+const router = express.Router();
+const { getAllProducts, addProduct, deleteProduct } = require("../controllers/product_controller");
+
+router.get("/product", getAllProducts);
+router.post("/product", addProduct);
+router.delete("/product/:productId", deleteProduct);
+
 const multer = require("multer");
 const { addProduct, getAllProducts, deleteProduct } = require("../controllers/product_controller");
 const authMiddleware = require("../middleware/authMiddleware"); // if needed
@@ -21,5 +29,6 @@ const upload = multer({ storage });
 router.post("/add", upload.single("productImage"), addProduct);
 router.get("/", getAllProducts);
 router.delete("/:productId", deleteProduct);
+
 
 module.exports = router;
