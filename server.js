@@ -45,3 +45,6 @@ app.use("/contact", contactusRoutes);
 app.use("/role", roleRoutes);
 app.use("/salary", salaryRoutes);
 
+
+app.use("/product", productRoutes);
+
