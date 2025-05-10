@@ -21,6 +21,7 @@ const CheckoutSchema = new mongoose.Schema({
   duepayment: { type: Number, required: true },
   slipUrl: { type: String }, // file path or filename
   slipPreview: { type: String }, // file path or filename for preview
+  status: { type: String, default:"pending" }, // file path or filename for preview
 }, { timestamps: true });
 
 module.exports = mongoose.model("Checkout", CheckoutSchema);

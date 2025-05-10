@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "app/uploads")));
 app.use("/auth", authRoutes);
 app.use("/event", evenRoutes);
 app.use("/checkout", checkoutRoutes);
