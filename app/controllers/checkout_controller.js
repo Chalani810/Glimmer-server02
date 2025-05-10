@@ -1,4 +1,5 @@
 const Checkout = require("../models/Checkout");
+const User = require("../models/User");
 const path = require("path");	
 const fs = require("fs");
 const { log } = require("console");
@@ -8,6 +9,7 @@ const mongoose = require("mongoose");
 const addCheckout = async (req, res) => {
   try {
     const {
+      userId = null, // Assuming you have user ID from the token
       firstName,
       lastName,
       email,
@@ -15,11 +17,12 @@ const addCheckout = async (req, res) => {
       telephone,
       mobile,
       contactMethod,
-      guestcount,
+      guestCount,
+      eventDate,
       comment,
-      totalAmount,
+      cartTotal,
       advancePayment,
-      assignedEmployees, // Expecting an array of ObjectId strings
+      duepayment,
     } = req.body;
 
     const slipUrl = req.file ? `app/uploads/${req.file.filename}` : '';
@@ -34,22 +37,40 @@ const addCheckout = async (req, res) => {
       return `OID-${month}${day}${hour}${minute}${second}`;
     };
 
-    // Basic validation
-    if (!firstName || !lastName || !email || !totalAmount) {
-      return res.status(400).json({
-        message: "First Name, Last Name, Email, and Total Amount are required"
+    log("Received file:", req.file); // Log the received file for debugging
+
+    // Validation - check important fields
+    if (!firstName || !lastName || !email || !mobile || !eventDate) {
+      return res.status(400).json({ 
+        message: "firstName, lastName, email , mobile and eventDate are required" 
       });
     }
 
-    // Validate assignedEmployees if provided
-    let employeeObjectIds = [];
-    if (assignedEmployees && Array.isArray(assignedEmployees)) {
-      employeeObjectIds = assignedEmployees.map(id => new mongoose.Types.ObjectId(id));
+    // Validate eventDate
+    const parsedEventDate = new Date(eventDate);
+    if (isNaN(parsedEventDate)) {
+      return res.status(400).json({ message: "Invalid eventDate format" });
     }
+
+    // Ensure eventDate is in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (parsedEventDate < today) {
+      return res.status(400).json({ message: "Event date must be today or in the future" });
+    }
+
+    const user = await User.findById(userId).select("firstName lastName email ");
+    if (!user){
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { firstname, lastname, email: userEmail } = user;
+    
 
     // Create a new checkout entry
     const newCheckout = new Checkout({
-      orderId: generateOrderCode(),
+      orderId : generateOrderCode(),
+      userId: userId || null, // Use the user ID from the token or null if not logged in
       firstName,
       lastName,
       email,
@@ -57,12 +78,15 @@ const addCheckout = async (req, res) => {
       telephone,
       mobile,
       contactMethod,
-      guestcount,
+      guestCount,
+      eventDate: parsedEventDate,
       comment,
-      totalAmount,
+      cartTotal,
       advancePayment,
+      duepayment,
+      slipPreview: req.file?.path,
+      status: "Pending", // Default status
       slipUrl,
-      assignedEmployees: employeeObjectIds,
     });
 
     await newCheckout.save();
@@ -184,7 +208,7 @@ if (!checkout) {
     }
   }
 
-  await Checkout.deleteOne(); //delete the checkout from the database
+  await Checkout.findByIdAndDelete(checkoutId); //delete the checkout from the database
 
   res.status(200).json({message: "Checkout deleted successfully"});
 } catch (err) {

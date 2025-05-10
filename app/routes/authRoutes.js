@@ -5,6 +5,7 @@ const path = require("path");
 const {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   deleteUser,
@@ -32,9 +33,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Public routes
 router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
+router.get("/me", authMiddleware, getCurrentUser);
+// Public routes
 router.get("/check-user", checkExistingUser);
 
 // Protected routes (require authentication)
