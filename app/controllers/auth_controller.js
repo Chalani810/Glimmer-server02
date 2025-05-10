@@ -70,12 +70,23 @@ const login = async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
       },
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select("firstName lastName email");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -140,7 +151,7 @@ const updateUser = async (req, res) => {
     if (req.file) {
       // Delete old profile picture if it exists
       if (currentUser.profilePicture) {
-        const oldImagePath = path.join(__dirname, "../../uploads", currentUser.profilePicture);
+        const oldImagePath = path.join(__dirname, "../../app/uploads", currentUser.profilePicture);
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
         }
@@ -185,7 +196,7 @@ const deleteUser = async (req, res) => {
 
     // Delete profile picture if it exists
     if (user.profilePicture) {
-      const imagePath = path.join(__dirname, "../../uploads", user.profilePicture);
+      const imagePath = path.join(__dirname, "../../app/uploads", user.profilePicture);
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
       }
@@ -202,6 +213,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   updateUser,

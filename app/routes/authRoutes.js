@@ -5,15 +5,17 @@ const path = require("path");
 const {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   deleteUser,
   updateUser,
 } = require("../controllers/auth_controller");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadPath = path.join(__dirname, "../../uploads");
+const uploadPath = path.join(__dirname, "../../app/uploads");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -30,7 +32,7 @@ const upload = multer({ storage });
 
 router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
-
+router.get("/me", authMiddleware, getCurrentUser);
 router.get("/users", getAllUsers);
 router.delete("/users/:id", deleteUser);
 router.get("/users/:id", getUserById);
