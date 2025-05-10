@@ -148,6 +148,8 @@ const updateOrderStatus = async (req, res) => {
       { new: true }
     );
 
+    log("Updated order:", updatedOrder); // Log the updated order for debugging
+
     if (!updatedOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
