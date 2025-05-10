@@ -4,6 +4,8 @@ const path = require("path");
 const fs = require("fs");
 const { log } = require("console");
 
+const mongoose = require("mongoose");
+
 const addCheckout = async (req, res) => {
   try {
     const {
@@ -32,7 +34,6 @@ const addCheckout = async (req, res) => {
       const hour = String(now.getHours()).padStart(2, '0');
       const minute = String(now.getMinutes()).padStart(2, '0');
       const second = String(now.getSeconds()).padStart(2, '0');
-    
       return `OID-${month}${day}${hour}${minute}${second}`;
     };
 
@@ -83,9 +84,9 @@ const addCheckout = async (req, res) => {
       cartTotal,
       advancePayment,
       duepayment,
-      slipUrl: req.file?.path, 
       slipPreview: req.file?.path,
       status: "Pending", // Default status
+      slipUrl,
     });
 
     await newCheckout.save();
@@ -96,6 +97,7 @@ const addCheckout = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 const getAll = async (req, res) => {
   try {

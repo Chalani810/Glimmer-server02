@@ -7,11 +7,11 @@ const addProduct = async (req, res) => {
     console.log(req.file);
 
     const { pname, ename, stockqut, pprice, visibility } = req.body;
-    
+
     // ✅ Fix template literal usage
     const photoUrl = req.file ? `app/uploads/${req.file.filename}` : "";
 
-    // ✅ Validation
+    // Validation
     if (!pname || !ename || !pprice) {
       return res
         .status(400)
@@ -21,7 +21,11 @@ const addProduct = async (req, res) => {
     const newProduct = new Product({
       pname,
       ename,
+
       stockqut,
+
+      stockqut: stock,
+
       pprice,
       photoUrl,
       visibility,
@@ -73,7 +77,9 @@ const deleteProduct = async (req, res) => {
     await product.deleteOne();
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete product", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete product", error: err.message });
   }
 };
 
