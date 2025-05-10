@@ -11,9 +11,10 @@ const path = require("path");
 const checkoutRoutes = require("./app/routes/checkoutRoutes");
 const cartRoutes = require("./app/routes/cartRoutes");
 const invoiceRoutes = require("./app/routes/invoiceRoutes"); 
-const cartRoutes = require("./app/routes/cartRoutes"); // Assuming you want to use the same routes for cart as well
 const employeeRoutes = require("./app/routes/employeeRoutes");
 const contactusRoutes = require("./app/routes/contactusRoutes");
+const roleRoutes = require("./app/routes/roleRoutes");
+const salaryRoutes = require("./app/routes/salaryRoutes");
 
 dotenv.config();
 const app = express();
@@ -60,4 +61,9 @@ app.use("/api", productRoutes);
 app.use("/invoice", invoiceRoutes);
 app.use("/employee", employeeRoutes);
 app.use("/contact", contactusRoutes);
+app.use("/role", roleRoutes);
+app.use("/salary", salaryRoutes);
+
+
+app.use("/product", productRoutes);
 

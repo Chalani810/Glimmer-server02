@@ -67,9 +67,50 @@ const deleteEvent = async (req, res) => {
     res.status(500).json({ message: "Failed to delete event", error: err.message });
   }
 };
+// ✅ NEW: Update event
+const updateEvent = async (req, res) => {
+  try {
+    const { title, description, visibility } = req.body;
+    const { eventId } = req.params;
+
+    console.log(req.body);
+    
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // If new image uploaded, delete the old one
+    if (req.file) {
+      const newPhotoUrl = `app/uploads/${req.file.filename}`;
+
+      if (event.photoUrl) {
+        const oldPhotoPath = path.join(__dirname, "../..", event.photoUrl);
+        if (fs.existsSync(oldPhotoPath)) {
+          fs.unlinkSync(oldPhotoPath);
+        }
+      }
+
+      event.photoUrl = newPhotoUrl;
+    }
+
+    // Update other fields
+    event.title = title || event.title;
+    event.description = description || event.description;
+    event.visibility = visibility !== undefined ? visibility : event.visibility;
+
+    await event.save();
+
+    res.status(200).json({ message: "Event updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update event", error: err.message });
+  }
+};
 
 module.exports = {
   add,
   getAll,
-  deleteEvent
+  deleteEvent,
+  updateEvent,
 };

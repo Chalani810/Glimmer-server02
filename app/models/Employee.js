@@ -25,12 +25,17 @@ const employeeSchema = new mongoose.Schema(
       trim: true,
     },
     profileImg: {
-        type: String,
-        required: false,
-      },
+      type: String,
+      required: false,
+    },
     availability: {
       type: Boolean,
       default: true,
+    },
+    occupation: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      trim: true,
     },
   },
   {

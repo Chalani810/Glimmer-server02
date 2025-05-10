@@ -3,10 +3,11 @@ const path = require("path");
 const fs = require("fs");
 const { log } = require("console");
 
+const mongoose = require("mongoose");
+
 const addCheckout = async (req, res) => {
   try {
     const {
-      orderNumber,
       firstName,
       lastName,
       email,
@@ -18,6 +19,7 @@ const addCheckout = async (req, res) => {
       comment,
       totalAmount,
       advancePayment,
+      assignedEmployees, // Expecting an array of ObjectId strings
     } = req.body;
 
     const slipUrl = req.file ? `app/uploads/${req.file.filename}` : '';
@@ -29,22 +31,25 @@ const addCheckout = async (req, res) => {
       const hour = String(now.getHours()).padStart(2, '0');
       const minute = String(now.getMinutes()).padStart(2, '0');
       const second = String(now.getSeconds()).padStart(2, '0');
-    
       return `OID-${month}${day}${hour}${minute}${second}`;
     };
 
-    log("Received file:", req.file); // Log the received file for debugging
-
-    // Validation - check important fields
+    // Basic validation
     if (!firstName || !lastName || !email || !totalAmount) {
-      return res.status(400).json({ 
-        message: "First Name, Last Name, Email, and Total Amount are required" 
+      return res.status(400).json({
+        message: "First Name, Last Name, Email, and Total Amount are required"
       });
+    }
+
+    // Validate assignedEmployees if provided
+    let employeeObjectIds = [];
+    if (assignedEmployees && Array.isArray(assignedEmployees)) {
+      employeeObjectIds = assignedEmployees.map(id => new mongoose.Types.ObjectId(id));
     }
 
     // Create a new checkout entry
     const newCheckout = new Checkout({
-      orderId : generateOrderCode(),
+      orderId: generateOrderCode(),
       firstName,
       lastName,
       email,
@@ -57,6 +62,7 @@ const addCheckout = async (req, res) => {
       totalAmount,
       advancePayment,
       slipUrl,
+      assignedEmployees: employeeObjectIds,
     });
 
     await newCheckout.save();
@@ -67,6 +73,7 @@ const addCheckout = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 const getAll = async (req, res) => {
   try {
