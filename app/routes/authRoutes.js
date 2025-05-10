@@ -10,12 +10,15 @@ const {
   getUserById,
   deleteUser,
   updateUser,
+  checkExistingUser,
+  toggleUserStatus,
+  updateLoyaltyPoints
 } = require("../controllers/auth_controller");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadPath = path.join(__dirname, "../../app/uploads");
+const uploadPath = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -33,9 +36,17 @@ const upload = multer({ storage });
 router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
 router.get("/me", authMiddleware, getCurrentUser);
+// Public routes
+router.get("/check-user", checkExistingUser);
+
+// Protected routes (require authentication)
+router.use(authMiddleware);
+
 router.get("/users", getAllUsers);
-router.delete("/users/:id", deleteUser);
 router.get("/users/:id", getUserById);
 router.put("/users/:id", upload.single("profilePicture"), updateUser);
+router.delete("/users/:id", deleteUser);
+router.patch("/users/:id/toggle-status", toggleUserStatus);
+router.patch("/users/:id/loyalty-points", updateLoyaltyPoints);
 
 module.exports = router;

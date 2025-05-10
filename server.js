@@ -14,6 +14,7 @@ const employeeRoutes = require("./app/routes/employeeRoutes");
 const contactusRoutes = require("./app/routes/contactusRoutes");
 const roleRoutes = require("./app/routes/roleRoutes");
 const salaryRoutes = require("./app/routes/salaryRoutes");
+const feedbackRoutes = require("./app/routes/feedbackRoutes");
 
 dotenv.config();
 const app = express();
@@ -22,19 +23,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from a single uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "app/uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-})
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
+
+}).then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
 // Routes
 app.get("/", (req, res) => {
@@ -51,6 +51,5 @@ app.use("/employee", employeeRoutes);
 app.use("/contact", contactusRoutes);
 app.use("/role", roleRoutes);
 app.use("/salary", salaryRoutes);
-
-
 app.use("/product", productRoutes);
+app.use("/feedbacks", feedbackRoutes);

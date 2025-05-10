@@ -21,6 +21,8 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: { type: String },
   role: { type: String, enum: ["user", "admin"], default: "user" },
+  isActive: { type: Boolean, default: true },
+  loyaltyPoints: { type: Number, default: 0 },
 }, { 
   timestamps: true 
 });
