@@ -6,6 +6,7 @@ const path = require("path");
 
 const authRoutes = require("./app/routes/authRoutes");
 const evenRoutes = require("./app/routes/evenRoutes");
+const feedbackRoutes = require("./app/routes/feedbackRoutes");
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/event", evenRoutes);
+app.use("/feedbacks", feedbackRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
