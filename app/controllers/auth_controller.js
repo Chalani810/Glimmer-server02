@@ -198,15 +198,21 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log(user);
+    
     res.json({
       token,
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        profilePicture: user.profilePicture,
-      },
+        loyaltyPoints: user.loyaltyPoints,
+        photoUrl: `${req.protocol}://${req.get("host")}/uploads/${
+          user.profilePicture
+        }`,
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
