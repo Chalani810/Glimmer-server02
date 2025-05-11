@@ -6,7 +6,7 @@ const addProduct = async (req, res) => {
   try {
     console.log(req.file);
 
-    const { pname, ename, stockqut, pprice, visibility } = req.body;
+    const { pname, ename, stock, pprice, visibility } = req.body;
 
     // ✅ Fix template literal usage
     const photoUrl = req.file ? `app/uploads/${req.file.filename}` : "";
@@ -21,11 +21,7 @@ const addProduct = async (req, res) => {
     const newProduct = new Product({
       pname,
       ename,
-
-      stockqut,
-
       stockqut: stock,
-
       pprice,
       photoUrl,
       visibility,
