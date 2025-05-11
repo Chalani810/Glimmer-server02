@@ -1,83 +1,27 @@
-// models/Checkout.js
-
 const mongoose = require("mongoose");
 
 const CheckoutSchema = new mongoose.Schema({
-  orderId: {
-    type: String,
-    required: true,
-  },
-  firstName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    lowercase: true,
-    trim: true,
-  },
-  address: {
-    type: String,
-    required: false,
-  },
-  telephone: {
-    type: String,
-    required: false,
-  },
-  mobile: {
-    type: String,
-    required: false,
-  },
-  contactMethod: {
-    type: String,
-    enum: ['message', 'call', 'email'],
-    required: false,
-  },
-
-  guestcount: {
-    type: String,
-    enum: ['less than 50', '50-100', 'more than 100'],  
-    required: false,
-  },
-  
-  comment: {
-    type: String,
-    required: false,
-  },
-  status: {
-    type: String,
-    required: false,
-    default: "Pending",
-  },
-  totalAmount: {
-    type: Number,
-    required: true,
-  },
-  advancePayment: {
-    type: Number,
-    required: false,
-  },
-  slipUrl: {
-    type: String,
-    required: false,
-  },
-
-  assignedEmployees: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Employee",
-  }],
-
-  createdAt: {
+  orderId: { type: String, required: true },
+  userId: {type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true },
+  address: { type: String },
+  telephone: { type: String },
+  mobile: { type: String, required: true },
+  contactMethod: { type: String, enum: ["call", "message", "email"], default: "call",required: true },
+  guestCount: { type: String, enum:["less than 100","100-200","more than 200" ],default:"less than 100"}, // updated to match frontend
+  eventDate: {
     type: Date,
-    default: Date.now,
-  }
-});
+    required: true, // Make required if event date is mandatory
+  },
+  comment: { type: String },
+  cartTotal: { type: Number, required: true },
+  advancePayment: { type: Number, required: true },
+  duepayment: { type: Number, required: true },
+  slipUrl: { type: String }, // file path or filename
+  slipPreview: { type: String }, // file path or filename for preview
+  status: { type: String, default:"pending" }, // file path or filename for preview
+}, { timestamps: true });
 
 module.exports = mongoose.model("Checkout", CheckoutSchema);

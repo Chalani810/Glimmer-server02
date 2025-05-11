@@ -42,9 +42,22 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    // Check for existing email or phone
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email },
+        { phone }
+      ]
+    });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      let message = "User already exists";
+      if (existingUser.email === email) {
+        message = "It looks like you're already registered. Please sign in with your credentials.";
+      } else if (existingUser.phone === phone) {
+        message = "It looks like you're already registered. Please sign in with your credentials.";
+      }
+      return res.status(400).json({ message });
     }
 
     const user = new User({
@@ -185,16 +198,34 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log(user);
+    
     res.json({
       token,
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        profilePicture: user.profilePicture,
-      },
+        loyaltyPoints: user.loyaltyPoints,
+        photoUrl: `${req.protocol}://${req.get("host")}/uploads/${
+          user.profilePicture
+        }`,
+      }
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select("firstName lastName email");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -336,6 +367,7 @@ const checkExistingUser = async (req, res) => {
 module.exports = {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   updateUser,

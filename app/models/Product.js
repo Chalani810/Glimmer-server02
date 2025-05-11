@@ -9,11 +9,6 @@ const ProductSchema = new mongoose.Schema({
   pprice: { type: Number, required: true },             // Product price
   visibility: { type: Boolean, default: false },        // Visibility toggle
 }, { timestamps: true });
-module.exports = mongoose.model('Product', ProductSchema);
 
-  stockqut: { type: Number },               // Stock quantity
-  pprice: { type: Number, required: true },             // Product price
-  visibility: { type: Boolean, default: true },        // Visibility toggle
-}, { timestamps: true });
 module.exports = mongoose.model('Product', ProductSchema);
 

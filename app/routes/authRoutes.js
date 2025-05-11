@@ -5,6 +5,7 @@ const path = require("path");
 const {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   deleteUser,
@@ -17,24 +18,26 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadPath = path.join(__dirname, "../../uploads");
+const uploadPath = path.join(__dirname, "../../");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadPath);
+  destination: function (req, file, cb) {
+    cb(null, "app/uploads/");
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
+
 const upload = multer({ storage });
 
-// Public routes
 router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
+router.get("/me", authMiddleware, getCurrentUser);
+// Public routes
 router.get("/check-user", checkExistingUser);
 
 // Protected routes (require authentication)
