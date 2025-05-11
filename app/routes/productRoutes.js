@@ -1,5 +1,5 @@
 const express = require("express");
-const { addProduct, getAllProducts, deleteProduct } = require("../controllers/product_controller");
+const { addProduct, getAllProducts, deleteProduct, getProductsByEventId } = require("../controllers/product_controller");
 
 const router = express.Router();
 
@@ -27,6 +27,7 @@ const upload = multer({ storage });
 router.post("/add", upload.single("productImage"), addProduct);
 router.get("/", getAllProducts);
 router.delete("/:productId", deleteProduct);
+router.get('/by-event/:eventId', getProductsByEventId);
 
 
 module.exports = router;
