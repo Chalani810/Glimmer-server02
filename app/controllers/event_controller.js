@@ -74,8 +74,6 @@ const updateEvent = async (req, res) => {
     const { title, description, visibility } = req.body;
     const { eventId } = req.params;
 
-    console.log(req.body);
-
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });

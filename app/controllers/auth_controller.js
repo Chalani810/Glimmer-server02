@@ -198,8 +198,6 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    console.log(user);
-    
     res.json({
       token,
       user: {
@@ -221,7 +219,7 @@ const login = async (req, res) => {
 
 const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select("firstName lastName email");
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

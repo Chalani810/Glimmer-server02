@@ -6,9 +6,6 @@ const addProduct = async (req, res) => {
   try {
     const { pname, events, stock, pprice } = req.body;
 
-    console.log(req.body);
-    
-
     const photoUrl = req.file ? `app/uploads/${req.file.filename}` : "";
 
     if (!pname || !events || !pprice) {
@@ -42,9 +39,6 @@ const getAllProducts = async (req, res) => {
     const products = await Product.find().populate({
       path: 'events',
     });
-
-    console.log(products);
-    
 
     const productsWithFullPath = products.map((product) => {
       const cleanPath = product.photoUrl?.split("uploads/")[1] || "";
