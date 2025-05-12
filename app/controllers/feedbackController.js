@@ -1,4 +1,3 @@
-// app/controllers/feedbackController.js
 const Feedback = require("../models/feedbackModel");
 
 // Create feedback
