@@ -16,6 +16,7 @@ const roleRoutes = require("./app/routes/roleRoutes");
 const salaryRoutes = require("./app/routes/salaryRoutes");
 const feedbackRoutes = require("./app/routes/feedbackRoutes");
 const orderRoutes = require("./app/routes/orderRoutes");
+const reportRoutes  = require("./app/routes/reportRoutes");
 
 dotenv.config();
 const app = express();
@@ -55,3 +56,4 @@ app.use("/salary", salaryRoutes);
 app.use("/product", productRoutes);
 app.use("/orders", orderRoutes);
 app.use("/feedback", feedbackRoutes);
+app.use('/reports', reportRoutes);

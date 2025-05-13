@@ -200,13 +200,12 @@ const updateOrderStatus = async (req, res) => {
 
     // Get the current order first to check previous status
     const currentOrder = await Checkout.findById(id);
-    
+
     if (!currentOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
 
     console.log("Current Order:", currentOrder.cart);
-    
 
     // Restock products if status is changing to "Completed"
     if (status === "Completed" && currentOrder.status !== "Completed") {
@@ -219,6 +218,13 @@ const updateOrderStatus = async (req, res) => {
           );
         }
       }
+
+      if (currentOrder.employees && currentOrder.employees.length > 0) {
+        await Employee.updateMany(
+          { _id: { $in: currentOrder.employees } },
+          { $set: { availability: true } }
+        );
+      }
     }
 
     // Update the order status
@@ -228,16 +234,15 @@ const updateOrderStatus = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({ 
-      message: "Order status updated", 
-      data: updatedOrder 
+    res.status(200).json({
+      message: "Order status updated",
+      data: updatedOrder,
     });
-
   } catch (err) {
     console.error("Error updating order status:", err);
-    res.status(500).json({ 
-      message: "Failed to update order status", 
-      error: err.message 
+    res.status(500).json({
+      message: "Failed to update order status",
+      error: err.message,
     });
   }
 };

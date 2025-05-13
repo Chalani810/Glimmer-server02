@@ -3,6 +3,7 @@ const Checkout = require("../models/Checkout");
 const Salary = require('../models/SalaryRecord');
 const path = require("path");
 const fs = require("fs");
+const { log } = require("console");
 
 const addEmployee = async (req, res) => {
   try {
@@ -66,13 +67,20 @@ const getAllEmployees = async (req, res) => {
     // Get completed checkouts for the current month
     const checkouts = await Checkout.find({
       createdAt: { $gte: firstDay, $lte: lastDay },
-      status: "completed",
+      status: "Completed",
     });
+
+    console.log("Checkouts for current month:", checkouts);
+    
+
 
     // Count events per employee
     const eventCountMap = {};
-    checkouts.forEach((checkout) => {
-      checkout.assignedEmployees.forEach((empId) => {
+    checkouts.forEach((checkout) => { 
+      checkout.employees.forEach((empId) => {
+
+        console.log("Employee ID:", empId);
+        
         const idStr = empId.toString();
         eventCountMap[idStr] = (eventCountMap[idStr] || 0) + 1;
       });
