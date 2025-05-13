@@ -54,4 +54,4 @@ app.use("/role", roleRoutes);
 app.use("/salary", salaryRoutes);
 app.use("/product", productRoutes);
 app.use("/orders", orderRoutes);
-app.use("feedback", feedbackRoutes);
+app.use("/feedback", feedbackRoutes);
