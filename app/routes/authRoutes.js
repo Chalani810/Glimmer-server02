@@ -12,7 +12,9 @@ const {
   updateUser,
   checkExistingUser,
   toggleUserStatus,
-  updateLoyaltyPoints
+  updateLoyaltyPoints,
+  requestPasswordReset,
+  resetPassword
 } = require("../controllers/auth_controller");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -36,8 +38,11 @@ const upload = multer({ storage });
 router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
 router.get("/me", authMiddleware, getCurrentUser);
+
 // Public routes
 router.get("/check-user", checkExistingUser);
+router.post("/forgot-password", requestPasswordReset);
+router.post("/reset-password", resetPassword);
 
 // Protected routes (require authentication)
 router.use(authMiddleware);

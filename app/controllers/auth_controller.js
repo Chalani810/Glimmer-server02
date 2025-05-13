@@ -2,6 +2,8 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 // Helper function to get paginated users
 const getPaginatedUsers = async (page = 1, limit = 10, search = '') => {
@@ -213,6 +215,96 @@ const login = async (req, res) => {
   }
 };
 
+//Forgot password and reset password functions
+const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({ message: "We’ve sent a password reset link to the email provided.Please check your inbox or spam folder" });
+    }
+
+    // Generate the token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 3600000; // Password reset token valid for 1 hour
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Send email
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+    
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_FROM,
+      subject: 'Password Reset Request',
+      text: `You are receiving this because you have requested a password reset.\n\n
+        Please click on the following link, or paste it into your browser to complete the process:\n\n
+        ${resetUrl}\n\n
+        If you did not request this, please ignore this email and your password will remain unchanged.\n`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "We’ve sent a password reset link to the email provided.Please check your inbox or spam folder" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Password reset token is invalid or has expired" });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    // Send confirmation email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_FROM,
+      subject: 'Your password has been updated successfully!',
+      text: `Hello,\n\n
+        This is a confirmation that the password for your account ${user.email} has just been changed.\n`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Password has been updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("firstName lastName email");
@@ -369,5 +461,7 @@ module.exports = {
   checkExistingUser,
   toggleUserStatus,
   updateLoyaltyPoints,
-  getPaginatedUsers
+  getPaginatedUsers,
+  requestPasswordReset,
+  resetPassword
 };
