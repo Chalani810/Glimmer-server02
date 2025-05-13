@@ -21,7 +21,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", // Your React app's URL
+  credentials: true
+}));
 app.use(express.json());
 
 
@@ -50,5 +53,5 @@ app.use("/contact", contactusRoutes);
 app.use("/role", roleRoutes);
 app.use("/salary", salaryRoutes);
 app.use("/product", productRoutes);
-app.use("/feedbacks", feedbackRoutes);
 app.use("/orders", orderRoutes);
+app.use("feedback", feedbackRoutes);
