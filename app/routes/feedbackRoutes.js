@@ -1,4 +1,3 @@
-// Glimmer-server02/app/routes/feedbackRoutes.js
 const express = require("express");
 const multer = require("multer");
 const {
@@ -6,7 +5,7 @@ const {
   getAllFeedbacks,
   updateFeedback,
   deleteFeedback,
-  getUserFeedbacks,
+  getFeedbacksByUser,
 } = require("../controllers/feedback_controller");
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -24,24 +23,20 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    // Accept images only
     if (!file.mimetype.match(/^image/)) {
       return cb(new Error('Only image files are allowed!'), false);
     }
     cb(null, true);
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // Limit file size to 5MB
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
-// Public routes
-router.get("/", getAllFeedbacks);  
-
-// Protected routes (require authentication)
-router.post("/", upload.single("photo"), addFeedback);
-router.get("/user", authMiddleware, getUserFeedbacks); 
-router.put("/:id", authMiddleware, upload.single("photo"), updateFeedback); 
-router.delete("/:id", authMiddleware, deleteFeedback); 
+router.get("/", getAllFeedbacks);
+router.post("/:id", upload.single("photo"), addFeedback);
+router.get("/:id", getFeedbacksByUser);
+router.put("/:id", upload.single("photo"), updateFeedback);
+router.delete("/:id", deleteFeedback);
 
 module.exports = router;
