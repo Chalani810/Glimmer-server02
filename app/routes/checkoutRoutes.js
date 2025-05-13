@@ -11,8 +11,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 const Checkout = require("../models/Checkout");
 const router = express.Router();
 
-console.log(assignEmployees);
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "app/uploads/");
