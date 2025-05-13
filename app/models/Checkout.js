@@ -34,6 +34,7 @@ const CheckoutSchema = new mongoose.Schema(
     status: { type: String, default: "pending" }, // file path or filename for preview
     cart: {
       type: mongoose.Schema.Types.Mixed,
+      ref: "Cart", 
       required: true,
     },
     employees: [

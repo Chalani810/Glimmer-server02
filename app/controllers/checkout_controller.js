@@ -1,4 +1,5 @@
 const Checkout = require("../models/Checkout");
+const Product = require("../models/Product");
 const User = require("../models/User");
 const Cart = require("../models/Cart");
 const Employee = require("../models/Employee");
@@ -99,9 +100,37 @@ const addCheckout = async (req, res) => {
 
     await newCheckout.save();
 
+    const parsedCart = typeof cart === "string" ? JSON.parse(cart) : cart;
+
+    // Validate product quantities before proceeding
+    for (const item of parsedCart.items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res
+          .status(404)
+          .json({ message: `Product ${item.productId} not found` });
+      }
+      if (product.stockqut < item.quantity) {
+        return res.status(400).json({
+          message: `Insufficient stock for product ${product.pname}. Available: ${product.stockqut}, Requested: ${item.quantity}`,
+        });
+      }
+    }
+
+    // Deduct quantities from products
+    for (const item of parsedCart.items) {
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { stockqut: -item.quantity } },
+        { new: true }
+      );
+    }
+
     let userCart = await Cart.findOne({ userId })
       .populate("items.productId")
       .populate("eventId");
+
+    console.log(userCart);
 
     userCart.eventId = null;
     userCart.cartTotal = 0;
@@ -169,26 +198,47 @@ const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ message: "Status is required" });
     }
 
+    // Get the current order first to check previous status
+    const currentOrder = await Checkout.findById(id);
+    
+    if (!currentOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    console.log("Current Order:", currentOrder.cart);
+    
+
+    // Restock products if status is changing to "Completed"
+    if (status === "Completed" && currentOrder.status !== "Completed") {
+      // Check if cart exists and has items
+      if (currentOrder.cart?.items) {
+        for (const item of currentOrder.cart.items) {
+          await Product.findByIdAndUpdate(
+            item.productId,
+            { $inc: { stockqut: item.quantity } } // Increment stock quantity
+          );
+        }
+      }
+    }
+
+    // Update the order status
     const updatedOrder = await Checkout.findByIdAndUpdate(
       id,
       { status },
       { new: true }
     );
 
-    log("Updated order:", updatedOrder); // Log the updated order for debugging
+    res.status(200).json({ 
+      message: "Order status updated", 
+      data: updatedOrder 
+    });
 
-    if (!updatedOrder) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    res
-      .status(200)
-      .json({ message: "Order status updated", data: updatedOrder });
   } catch (err) {
     console.error("Error updating order status:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to update order status", error: err.message });
+    res.status(500).json({ 
+      message: "Failed to update order status", 
+      error: err.message 
+    });
   }
 };
 

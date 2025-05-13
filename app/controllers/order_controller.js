@@ -161,7 +161,12 @@ const getOrdersByUser = async (req, res) => {
     const { userId } = req.params;
 
     const orders = await Checkout.find({ userId })
-      .populate("employees")
+      .populate({
+        path: "employees",
+        populate: {
+          path: "occupation",
+        },
+      })
       .sort({ createdAt: -1 });
 
     if (!orders || orders.length === 0) {
