@@ -21,7 +21,7 @@ const updateCart = async (req, res) => {
 
     let cart = await Cart.findOne({ userId })
       .populate("items.productId", "name price eventId")
-      .populate("eventId", "name");
+      .populate("eventId", "title");
 
     if (cart) {
       const existingItem = cart.items.find(
