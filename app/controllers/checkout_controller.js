@@ -1,6 +1,7 @@
 const Checkout = require("../models/Checkout");
 const User = require("../models/User");
 const Cart = require("../models/Cart");
+const Employee = require("../models/Employee");
 const path = require("path");
 const fs = require("fs");
 const { log } = require("console");
@@ -120,7 +121,12 @@ const addCheckout = async (req, res) => {
 
 const getAll = async (req, res) => {
   try {
-    const checkouts = await Checkout.find(); // Assuming you want to populate assigned employees
+    const checkouts = await Checkout.find().populate({
+      path: "employees",
+      populate: {
+        path: "occupation",
+      },
+    });
 
     const checkoutsWithFullPath = checkouts.map((checkout) => {
       const result = {
@@ -223,24 +229,28 @@ const deleteCheckout = async (req, res) => {
   try {
     const { checkoutId } = req.params;
 
-    log("Received checkoutId:", checkoutId); // Log the received checkoutId for debugging
+    console.log("Received checkoutId:", checkoutId);
 
     const checkout = await Checkout.findById(checkoutId);
     if (!checkout) {
       return res.status(404).json({ message: "Checkout not found" });
     }
 
+    if (checkout.employees && checkout.employees.length > 0) {
+      await Employee.updateMany(
+        { _id: { $in: checkout.employees } },
+        { $set: { availability: true } }
+      );
+    }
+
     if (checkout.slipUrl) {
       const filePath = path.join(__dirname, "../..", checkout.slipUrl);
-
-      //check if the file exists before attempting to delete it
-
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
     }
 
-    await Checkout.findByIdAndDelete(checkoutId); //delete the checkout from the database
+    await Checkout.findByIdAndDelete(checkoutId);
 
     res.status(200).json({ message: "Checkout deleted successfully" });
   } catch (err) {

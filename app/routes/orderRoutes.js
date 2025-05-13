@@ -5,8 +5,8 @@ const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
 
 router.get("/bills", authMiddleware, roleMiddleware("admin"), getAllOrders);
-router.put("/bills/:id/status", authMiddleware, roleMiddleware("admin"), updateOrderStatus);
-router.put("/bills/:id/assign", authMiddleware, roleMiddleware("admin"), assignedEmployees);
+router.put("/bills/:id/status", updateOrderStatus);
+router.put("/bills/:id/assign", assignedEmployees);
 router.get("/user/:userId", authMiddleware, getOrdersByUser);
 
 module.exports = router;

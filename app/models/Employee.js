@@ -34,6 +34,7 @@ const employeeSchema = new mongoose.Schema(
     },
     occupation: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Role", 
       required: true,
       trim: true,
     },

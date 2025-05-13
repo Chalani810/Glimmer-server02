@@ -20,7 +20,7 @@ const CheckoutSchema = new mongoose.Schema(
       type: String,
       enum: ["less than 100", "100-200", "more than 200"],
       default: "less than 100",
-    }, // updated to match frontend
+    },
     eventDate: {
       type: Date,
       required: true, // Make required if event date is mandatory
@@ -36,6 +36,12 @@ const CheckoutSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+    employees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee", 
+      },
+    ],
   },
   { timestamps: true }
 );
