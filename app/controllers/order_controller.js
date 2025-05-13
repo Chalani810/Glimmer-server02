@@ -1,6 +1,7 @@
 const Checkout = require("../models/Checkout");
 const Employee = require("../models/Employee");
 const Cart = require("../models/Cart");
+const Feedback = require("../models/Feedback");
 
 // Get all orders (already partially implemented in your OrderHistory fetch)
 const getAllOrders = async (req, res) => {
@@ -46,7 +47,6 @@ const updateOrderStatus = async (req, res) => {
       { new: true }
     ).populate({
       path: "employees",
-      select: "name",
     });
 
     if (!order) {
@@ -168,7 +168,18 @@ const getOrdersByUser = async (req, res) => {
       return res.status(404).json({ message: "No orders found for this user" });
     }
 
-    res.json(orders);
+    // For each order, check if there's a feedback entry
+    const enrichedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const feedbackExists = await Feedback.exists({ orderId: order._id });
+        return {
+          ...order.toObject(),
+          hasFeedback: !!feedbackExists,
+        };
+      })
+    );
+
+    res.json(enrichedOrders);
   } catch (err) {
     console.error("Error fetching user orders:", err);
     res.status(500).json({
