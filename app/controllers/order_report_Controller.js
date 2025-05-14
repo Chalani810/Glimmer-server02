@@ -191,13 +191,14 @@ topCheckouts.forEach((checkout, index) => {
 });
 
     // === Footer ===
-    doc
-      .fontSize(7)
-      .fillColor("gray")
-      .text("© 2025 Glimmer Inc. — All rights reserved", 40, doc.page.height - 40, {
-        align: "center",
-        width: 520,
-      });
+const footerY = Math.max(orderY + 60, 750);
+    doc.fontSize(8)
+       .fillColor("gray")
+       .text("© 2025 Glimmer Inc. - All rights reserved", 
+         40, footerY, { 
+           align: "center",
+           width: 500
+         });
 
     doc.end();
   } catch (err) {

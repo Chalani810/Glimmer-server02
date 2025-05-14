@@ -6,8 +6,7 @@ const Checkout = require("../models/Checkout");
 const Salary = require("../models/SalaryRecord");
 
 const generateEmployeeReport = async (req, res) => {
-  const PDFDocument = require("pdfkit");
-
+  let doc;
   try {
     const now = new Date();
     const reportDate = now.toLocaleDateString();
@@ -37,7 +36,7 @@ const generateEmployeeReport = async (req, res) => {
       employeeId: { $exists: true, $ne: null },
     }).populate("employeeId");
 
-    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    doc = new PDFDocument({ margin: 40, size: "A4" });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -62,8 +61,8 @@ const generateEmployeeReport = async (req, res) => {
       .fillColor("black")
       .text("mer", { continued: true })
       .font("Helvetica")
-      .fontSize(12)
-      .text("  | Monthly Employee Report", { align: "left" });
+      .fontSize(18)
+      .text(" | Monthly Employee Report", { align: "left" }); // Changed title to match employee report
 
     doc
       .moveDown()
@@ -78,18 +77,18 @@ const generateEmployeeReport = async (req, res) => {
       .strokeColor(red)
       .stroke();
 
-    // === Table Header ===
-    const startY = doc.y + 10;
-    doc
-      .font("Helvetica-Bold")
-      .fillColor("black")
-      .fontSize(9)
-      .text("ID", 40, startY)
-      .text("Name", 120, startY)
-      .text("Position", 250, startY)
-      .text("Events", 330, startY)
-      .text("Status", 390, startY)
-      .text("Last Payment", 470, startY);
+// === Table Header ===
+const startY = doc.y + 10;
+doc
+  .font("Helvetica-Bold")
+  .fillColor("black")
+  .fontSize(9)
+  .text("ID", 40, startY)                
+  .text("Name", 100, startY)             
+  .text("Position", 200, startY)         
+  .text("Events", 320, startY)           
+  .text("Status", 380, startY)           
+  .text("Last Payment", 450, startY);    
 
     doc
       .moveTo(40, startY + 12)
@@ -97,42 +96,40 @@ const generateEmployeeReport = async (req, res) => {
       .strokeColor(red)
       .stroke();
 
-    // === Table Rows ===
-    let y = startY + 18;
-    doc.font("Helvetica").fontSize(8);
+// === Table Rows ===
+let currentY = startY + 18;
+doc.font("Helvetica").fontSize(8);
 
-    employees.forEach((employee) => {
-      const empId = employee._id.toString();
-      const eventsCount = eventCountMap[empId] || 0;
-      const salary = salaries.find(
-        (s) => s?.employeeId?._id?.toString() === empId
-      );
+employees.forEach((employee) => {
+  const empId = employee._id.toString();
+  const eventsCount = eventCountMap[empId] || 0;
+  const salary = salaries.find((s) => s?.employeeId?._id?.toString() === empId);
 
-      const status = salary ? "Paid" : "Pending";
-      const statusColor = salary ? green : red;
-      const paymentDate = salary
-        ? new Date(salary.createdAt).toLocaleDateString()
-        : "N/A";
+  const status = salary ? "Paid" : "Pending";
+  const statusColor = salary ? green : red;
+  const paymentDate = salary
+    ? new Date(salary.createdAt).toLocaleDateString()
+    : "N/A";
 
-      doc
-        .fillColor("black")
-        .text(employee.empId, 40, y)
-        .text(employee.name, 120, y)
-        .text(employee.occupation?.title || "N/A", 250, y)
-        .text(eventsCount.toString(), 330, y)
-        .fillColor(statusColor)
-        .text(status, 390, y)
-        .fillColor("black")
-        .text(paymentDate, 470, y);
+  doc
+    .fillColor("black")
+    .text(employee.empId, 40, currentY)
+    .text(employee.name, 110, currentY, { width: 90 })  
+    .text(employee.occupation?.title || "N/A", 200, currentY, { width: 110 }) 
+    .text(eventsCount.toString(), 320, currentY, { width: 50, align: 'center' })
+    .fillColor(statusColor)
+    .text(status, 380, currentY, { width: 60, align: 'center' })
+    .fillColor("black")
+    .text(paymentDate, 450, currentY, { width: 100, align: 'right' });
 
-      y += 14;
-    });
+  currentY += 14;
+});
 
     // === Summary Line ===
     doc
       .moveDown()
-      .moveTo(40, y + 5)
-      .lineTo(555, y + 5)
+      .moveTo(40, currentY + 5)
+      .lineTo(555, currentY + 5)
       .strokeColor(red)
       .stroke();
 
@@ -140,22 +137,28 @@ const generateEmployeeReport = async (req, res) => {
       .font("Helvetica-Bold")
       .fontSize(9)
       .fillColor("black")
-      .text(`Total Employees: ${employees.length}`, 40, y + 10)
+      .text(`Total Employees: ${employees.length}`, 40, currentY + 10);
 
     // === Footer ===
-    doc
-      .fontSize(7)
+    const footerY = Math.max(currentY + 60, 750); // Changed from orderY to currentY
+    doc.fontSize(8)
       .fillColor("gray")
-      .text("© 2025 Glimmer Inc. — All rights reserved", 40, 800, {
-        align: "center",
-        width: 520,
-      });
+      .text("© 2025 Glimmer Inc. - All rights reserved", 
+        40, footerY, { 
+          align: "center",
+          width: 500
+        });
 
     doc.end();
   } catch (err) {
     console.error("PDF generation error:", err);
+    if (doc) doc.end(); // Ensure the document is properly closed
+    
     if (!res.headersSent) {
-      res.status(500).json({ error: "Failed to generate PDF report" });
+      res.status(500).json({ 
+        error: "Failed to generate PDF report",
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
     }
   }
 };

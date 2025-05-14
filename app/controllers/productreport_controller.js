@@ -3,9 +3,13 @@ const Product = require("../models/Product");
 const Checkout = require("../models/Checkout");
 
 const generateProductReport = async (req, res) => {
+  let doc;
   try {
     // Setup and Initial Data Fetching
     const now = new Date();
+    const reportDate = now.toLocaleDateString();
+    const reportTime = now.toLocaleTimeString();
+
     const [products, checkouts] = await Promise.all([
       Product.find().lean(),
       Checkout.find({
@@ -75,8 +79,9 @@ const generateProductReport = async (req, res) => {
     const mostRentedProduct = reportData.length > 0 ? reportData[0] : null;
 
     // Generate PDF
-    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    doc = new PDFDocument({ margin: 40, size: "A4" });
     
+    // Set response headers before piping
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
@@ -85,10 +90,39 @@ const generateProductReport = async (req, res) => {
 
     doc.pipe(res);
 
+    const red = "#cc0000";
+    const lightGray = "#f5f5f5";
+
+    // === Header ===
+    doc
+      .fillColor(red)
+      .font("Helvetica-Bold")
+      .fontSize(24)
+      .text("Glim", { continued: true })
+      .fillColor("black")
+      .text("mer", { continued: true })
+      .font("Helvetica")
+      .fontSize(18)
+      .text(" | Product Report", { align: "left" });
+
+    doc
+      .moveDown()
+      .fontSize(9)
+      .fillColor("gray")
+      .text(`Generated on ${reportDate} at ${reportTime}`, { align: "left" });
+
+    doc
+      .moveDown()
+      .moveTo(40, doc.y)
+      .lineTo(555, doc.y)
+      .strokeColor(red)
+      .stroke();
+
+      doc.moveDown(0.5);
     // PDF Header
-    doc.fillColor("#cc0000")
+    doc.fillColor("#black")
        .font("Helvetica-Bold")
-       .fontSize(24)
+       .fontSize(18)
        .text("Products Report", { align: "left" })
        .moveDown()
        .fontSize(10)
@@ -136,9 +170,9 @@ const generateProductReport = async (req, res) => {
     let y = tableTop + 25;
     reportData.forEach(row => {
       // Check if we need a new page
-      if (y > 700) { // Approaching bottom of page
+      if (y > 700) {
         doc.addPage();
-        y = 40; // Reset y position for new page
+        y = 40;
       }
       
       doc.text(row.name, 40, y, { width: colWidths[0], ellipsis: true })
@@ -155,8 +189,7 @@ const generateProductReport = async (req, res) => {
       quantity: acc.quantity + row.totalQuantity
     }), { events: 0, quantity: 0 });
 
-    // Ensure summary appears before footer
-    if (y > 700) { // If summary would push past page end
+    if (y > 700) {
       doc.addPage();
       y = 40;
     }
@@ -169,8 +202,8 @@ const generateProductReport = async (req, res) => {
        .text(`Total Order Events: ${totals.events}`, 220, y + 20)
        .text(`Total Units Ordered: ${totals.quantity}`, 400, y + 20);
 
-    // Footer - Positioned at fixed bottom
-    const footerY = Math.max(y + 60, 750); // Ensure footer is at bottom
+    // Footer
+    const footerY = Math.max(y + 60, 750);
     doc.fontSize(8)
        .fillColor("gray")
        .text("© 2025 Glimmer Inc. - All rights reserved", 
@@ -179,10 +212,17 @@ const generateProductReport = async (req, res) => {
            width: 500
          });
 
+    // Finalize the PDF
     doc.end();
 
   } catch (err) {
     console.error(`Report Error: ${err.message}`, err.stack);
+    
+    // If we already started the PDF, try to end it properly
+    if (doc && !doc.ended) {
+      doc.end();
+    }
+    
     if (!res.headersSent) {
       res.status(500).json({ 
         error: "Failed to generate report",
