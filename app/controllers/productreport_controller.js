@@ -4,7 +4,7 @@ const Checkout = require("../models/Checkout");
 
 const generateProductReport = async (req, res) => {
   try {
-    // 1. Setup and Initial Data Fetching
+    // Setup and Initial Data Fetching
     const now = new Date();
     const [products, checkouts] = await Promise.all([
       Product.find().lean(),
@@ -21,7 +21,7 @@ const generateProductReport = async (req, res) => {
       return res.status(404).json({ error: "No products found" });
     }
 
-    // 2. Process Order Data
+    // Process Order Data
     const productStats = new Map();
     
     checkouts.forEach(checkout => {
@@ -32,17 +32,15 @@ const generateProductReport = async (req, res) => {
         const current = productStats.get(productId) || {
           name: item.productId.pname,
           price: item.productId.pprice,
-          totalEvents: 0,       // Number of events this product was ordered in
-          totalQuantity: 0,     // Total quantity ordered across all events
-          perEventQuantities: {} // Track quantities per event
+          totalEvents: 0,
+          totalQuantity: 0,
+          perEventQuantities: {}
         };
         
-        // Increment event count if this is first time in current checkout
         if (!current.perEventQuantities[checkout._id]) {
           current.totalEvents += 1;
         }
         
-        // Track quantity for this event
         current.perEventQuantities[checkout._id] = 
           (current.perEventQuantities[checkout._id] || 0) + (item.quantity || 1);
         current.totalQuantity += (item.quantity || 1);
@@ -51,7 +49,7 @@ const generateProductReport = async (req, res) => {
       });
     });
 
-    // 3. Prepare Report Data
+    // Prepare Report Data
     const reportData = products.map(product => {
       const stats = productStats.get(product._id.toString()) || {
         name: product.pname,
@@ -61,7 +59,6 @@ const generateProductReport = async (req, res) => {
         avgPerEvent: 0
       };
       
-      // Calculate average quantity per event
       const avgPerEvent = stats.totalEvents > 0 
         ? (stats.totalQuantity / stats.totalEvents).toFixed(2)
         : 0;
@@ -73,12 +70,11 @@ const generateProductReport = async (req, res) => {
         totalQuantity: stats.totalQuantity,
         avgPerEvent: avgPerEvent
       };
-    }).sort((a, b) => b.totalQuantity - a.totalQuantity); // Sort by most rented
+    }).sort((a, b) => b.totalQuantity - a.totalQuantity);
 
-    // Find most rented product
     const mostRentedProduct = reportData.length > 0 ? reportData[0] : null;
 
-    // 4. Generate PDF
+    // Generate PDF
     const doc = new PDFDocument({ margin: 40, size: "A4" });
     
     res.setHeader("Content-Type", "application/pdf");
@@ -89,11 +85,11 @@ const generateProductReport = async (req, res) => {
 
     doc.pipe(res);
 
-    // 5. PDF Header
+    // PDF Header
     doc.fillColor("#cc0000")
        .font("Helvetica-Bold")
        .fontSize(24)
-       .text("Customer Product Orders Report", { align: "left" })
+       .text("Products Report", { align: "left" })
        .moveDown()
        .fontSize(10)
        .fillColor("black")
@@ -114,7 +110,7 @@ const generateProductReport = async (req, res) => {
        .lineTo(550, doc.y + 10)
        .stroke("#cc0000");
 
-    // 6. Main Table
+    // Main Table
     const tableTop = doc.y + 20;
     const colWidths = [180, 90, 90, 90, 90];
     const headers = ["Product", "Events", "Price", "Total Qty", "Avg/Event"];
@@ -139,6 +135,12 @@ const generateProductReport = async (req, res) => {
     
     let y = tableTop + 25;
     reportData.forEach(row => {
+      // Check if we need a new page
+      if (y > 700) { // Approaching bottom of page
+        doc.addPage();
+        y = 40; // Reset y position for new page
+      }
+      
       doc.text(row.name, 40, y, { width: colWidths[0], ellipsis: true })
          .text(row.events.toString(), 220, y)
          .text(row.price, 310, y)
@@ -147,11 +149,17 @@ const generateProductReport = async (req, res) => {
       y += 20;
     });
 
-    // 7. Summary Section
+    // Summary Section
     const totals = reportData.reduce((acc, row) => ({
       events: acc.events + row.events,
       quantity: acc.quantity + row.totalQuantity
     }), { events: 0, quantity: 0 });
+
+    // Ensure summary appears before footer
+    if (y > 700) { // If summary would push past page end
+      doc.addPage();
+      y = 40;
+    }
 
     doc.moveTo(40, y + 10)
        .lineTo(550, y + 10)
@@ -161,14 +169,15 @@ const generateProductReport = async (req, res) => {
        .text(`Total Order Events: ${totals.events}`, 220, y + 20)
        .text(`Total Units Ordered: ${totals.quantity}`, 400, y + 20);
 
-    // 8. Footer
+    // Footer - Positioned at fixed bottom
+    const footerY = Math.max(y + 60, 750); // Ensure footer is at bottom
     doc.fontSize(8)
        .fillColor("gray")
-       .text("© 2025 Glimmer Inc. - All rights reserved", { 
-         align: "center",
-         width: 100,
-         y: 600
-       });
+       .text("© 2025 Glimmer Inc. - All rights reserved", 
+         40, footerY, { 
+           align: "center",
+           width: 500
+         });
 
     doc.end();
 
