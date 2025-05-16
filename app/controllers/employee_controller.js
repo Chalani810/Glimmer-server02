@@ -70,17 +70,11 @@ const getAllEmployees = async (req, res) => {
       status: "Completed",
     });
 
-    console.log("Checkouts for current month:", checkouts);
-    
-
-
     // Count events per employee
     const eventCountMap = {};
     checkouts.forEach((checkout) => { 
       checkout.employees.forEach((empId) => {
 
-        console.log("Employee ID:", empId);
-        
         const idStr = empId.toString();
         eventCountMap[idStr] = (eventCountMap[idStr] || 0) + 1;
       });

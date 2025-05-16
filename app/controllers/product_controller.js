@@ -4,13 +4,10 @@ const fs = require("fs");
 
 const addProduct = async (req, res) => {
   try {
-    console.log("addProduct - Request body:", req.body);
-    console.log("addProduct - Request file:", req.file);
     const { pname, events, stock, pprice, category } = req.body;
 
     // Validate required fields
     if (!pname || !events || !pprice || !category) {
-      console.log("addProduct - Validation failed:", { pname, events, pprice, category });
       return res.status(400).json({
         message: "Missing required fields",
         details: {
@@ -27,7 +24,6 @@ const addProduct = async (req, res) => {
       ? events.filter((id) => id)
       : events.split(",").map((id) => id.trim()).filter((id) => id);
     if (eventIds.length === 0) {
-      console.log("addProduct - No valid event IDs provided");
       return res.status(400).json({ message: "At least one valid event ID is required" });
     }
 
