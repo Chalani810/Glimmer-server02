@@ -19,6 +19,7 @@ const feedbackRoutes = require("./app/routes/feedbackRoutes");
 const orderRoutes = require("./app/routes/orderRoutes");
 const reportRoutes  = require("./app/routes/reportRoutes");
 const productreportRoutes = require("./app/routes/productreportRoutes");
+const predictionRoutes = require('./app/routes/predictionRoutes');
 
 
 
@@ -63,3 +64,4 @@ app.use("/feedback", feedbackRoutes);
 app.use('/reports', reportRoutes);
 app.use("/order_report", order_reportRoutes);
 app.use("/product_report", productreportRoutes);
+app.use("/predict", predictionRoutes);
