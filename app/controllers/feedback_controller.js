@@ -64,9 +64,18 @@ const getAllFeedbacks = async (req, res) => {
           console.error("Error processing photo URL:", error);
         }
       }
+      try {
+        result.userId.profilePicture = `${req.protocol}://${req.get(
+          "host"
+        )}/uploads/${feedback.userId.profilePicture}`;
+      } catch (error) {
+        console.error("Error processing photo URL:", error);
+      }
 
       return result;
     });
+
+    console.log("feedbacksWithFullPath", feedbacksWithFullPath);
 
     res.status(200).json(feedbacksWithFullPath);
   } catch (err) {
@@ -186,7 +195,6 @@ const deleteFeedback = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   addFeedback,

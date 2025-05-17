@@ -195,8 +195,6 @@ const updateOrderStatus = async (req, res) => {
     if (!status) {
       return res.status(400).json({ message: "Status is required" });
     }
-
-    // Get the current order first to check previous status
     const currentOrder = await Checkout.findById(id);
 
     if (!currentOrder) {
@@ -205,13 +203,11 @@ const updateOrderStatus = async (req, res) => {
 
     // Restock products if status is changing to "Completed"
     if (status === "Completed" && currentOrder.status !== "Completed") {
-      // Check if cart exists and has items
       if (currentOrder.cart?.items) {
         for (const item of currentOrder.cart.items) {
-          await Product.findByIdAndUpdate(
-            item.productId,
-            { $inc: { stockqut: item.quantity } } // Increment stock quantity
-          );
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { stockqut: item.quantity },
+          });
         }
       }
 
@@ -221,9 +217,13 @@ const updateOrderStatus = async (req, res) => {
           { $set: { availability: true } }
         );
       }
+
+      const pointsToAdd = Math.floor(currentOrder.cartTotal / 1000);
+      await User.findByIdAndUpdate(currentOrder.userId, {
+        $inc: { loyaltyPoints: pointsToAdd },
+      });
     }
 
-    // Update the order status
     const updatedOrder = await Checkout.findByIdAndUpdate(
       id,
       { status },
