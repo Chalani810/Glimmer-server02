@@ -41,7 +41,7 @@ def main():
 
         # Encoders
         event_type_encoder = {'Wedding': 5, 'Corporate Event': 2, 'Engagement Party': 3, 'Anniversary': 0}
-        product_name_encoder = {'chair': 0, 'table': 1, 'Navy Blue and Yellow Tent': 6}
+        product_name_encoder = {'Versailles Chair': 13, 'Surpentine Buffet Table': 12, 'Red Carpet': 11,'Navy Blue and Yellow Tent': 6}
         season_period_encoder = {'1-4': 0, '5-8': 1, '9-12': 2}
 
         # Encode categorical features

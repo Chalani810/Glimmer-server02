@@ -24,6 +24,9 @@ const updateCart = async (req, res) => {
       .populate("eventId", "title");
 
     if (cart) {
+
+      console.log(cart);
+      
       const existingItem = cart.items.find(
         (item) => item.productId._id.toString() === productId
       );
