@@ -130,8 +130,6 @@ const addCheckout = async (req, res) => {
       .populate("items.productId")
       .populate("eventId");
 
-    console.log(userCart);
-
     userCart.eventId = null;
     userCart.cartTotal = 0;
     userCart.advancePayment = 0;
@@ -203,8 +201,7 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    console.log("Current Order:", currentOrder);
-
+    // Restock products if status is changing to "Completed"
     if (status === "Completed" && currentOrder.status !== "Completed") {
       if (currentOrder.cart?.items) {
         for (const item of currentOrder.cart.items) {
@@ -282,8 +279,6 @@ const assignEmployees = async (req, res) => {
 const deleteCheckout = async (req, res) => {
   try {
     const { checkoutId } = req.params;
-
-    console.log("Received checkoutId:", checkoutId);
 
     const checkout = await Checkout.findById(checkoutId);
     if (!checkout) {

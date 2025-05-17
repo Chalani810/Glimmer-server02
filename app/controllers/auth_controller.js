@@ -236,15 +236,9 @@ const requestPasswordReset = async (req, res) => {
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = resetTokenExpiry;
     await user.save();
-
-    console.log(process.env.EMAIL_USER);
-    console.log(process.env.EMAIL_PASS);
     
     // Send email
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-    
-    console.log(resetUrl);
-    
     
     const transporter = nodemailer.createTransport({
       service: 'gmail',
