@@ -25,7 +25,6 @@ const predictionRoutes = require('./app/routes/predictionRoutes');
 dotenv.config();
 const app = express();
 
-// Middleware
 app.use(cors({
   origin: "http://localhost:3000",
   credentials: true
