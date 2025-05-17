@@ -20,6 +20,7 @@ const orderRoutes = require("./app/routes/orderRoutes");
 const reportRoutes  = require("./app/routes/reportRoutes");
 const productreportRoutes = require("./app/routes/productreportRoutes");
 const customerReportRoutes = require("./app/routes/customer_reportRoutes");
+const predictionRoutes = require('./app/routes/predictionRoutes');
 
 dotenv.config();
 const app = express();
@@ -63,3 +64,4 @@ app.use('/reports', reportRoutes);
 app.use("/order_report", order_reportRoutes);
 app.use("/product_report", productreportRoutes);
 app.use("/customer_report", customerReportRoutes);
+app.use("/predict", predictionRoutes);
