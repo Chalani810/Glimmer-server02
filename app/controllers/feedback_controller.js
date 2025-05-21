@@ -75,8 +75,6 @@ const getAllFeedbacks = async (req, res) => {
       return result;
     });
 
-    console.log("feedbacksWithFullPath", feedbacksWithFullPath);
-
     res.status(200).json(feedbacksWithFullPath);
   } catch (err) {
     res.status(500).json({

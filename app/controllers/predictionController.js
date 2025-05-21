@@ -3,7 +3,7 @@ const { spawn } = require("child_process");
 const predictRevenue = (req, res) => {
   const inputData = req.body;
 
-  // ✅ Remove total_price_boxcox from the required fields
+
   const requiredFields = [
     "event_type",
     "product_name",
@@ -26,8 +26,6 @@ const predictRevenue = (req, res) => {
   const pythonPath =
     "C:\\Users\\CHALANI AMARASOORIYA\\Desktop\\Glimmer\\server02\\venv\\Scripts\\python.exe";
   const scriptPath = "app\\scripts\\predict.py";
-
-  console.log(inputData);
 
   const python = spawn(pythonPath, [scriptPath, JSON.stringify(inputData)]);
 

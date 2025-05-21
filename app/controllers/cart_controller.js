@@ -25,8 +25,6 @@ const updateCart = async (req, res) => {
 
     if (cart) {
 
-      console.log(cart);
-      
       const existingItem = cart.items.find(
         (item) => item.productId._id.toString() === productId
       );

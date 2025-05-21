@@ -133,7 +133,7 @@ const getAllUsers = async (req, res) => {
 
     const usersWithStatus = await Promise.all(
       result.users.map(async (user) => {
-        // Check if account is less than 3 months old
+        // Checking if account is less than 3 months old
         const isNewUser = user.createdAt >= threeMonthsAgo;
 
         // Only check for checkouts if not a new user
@@ -149,7 +149,7 @@ const getAllUsers = async (req, res) => {
         return {
           ...user.toObject(),
           isActive,
-          isNewUser, // Optional: include this flag if you want to know why they're active
+          isNewUser, 
         };
       })
     );

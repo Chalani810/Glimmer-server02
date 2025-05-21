@@ -184,7 +184,7 @@ const generateCustomerReport = async (req, res) => {
         .text(customer.userId || "N/A", 70, customerY)
         .text(`${customer.firstName} ${customer.lastName}`, 150, customerY)
         .text(customer.email, 250, customerY)
-        .text(customer.loyaltyPoints?.toString() || "0", 350, customerY)
+        .text(customer.loyaltyPoints?.toString() || "0", 400, customerY)
         .text(joinDate, 450, customerY)
         .fillColor(customer.isActive ? "black" : red)
         .text(customer.isActive ? "Active" : "Inactive", 500, customerY);
